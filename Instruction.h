@@ -20,6 +20,7 @@ protected:
 	int paired_endif;
 	int paired_endloop;
 	int how_many;
+	int original;
 };
 
 #endif

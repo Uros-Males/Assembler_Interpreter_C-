@@ -15,7 +15,9 @@ public:
 	void execute(const string& filepath);
 	Operand* findOperand(char c); 
 	void processLine(Instruction* tmp, string tmps, int &i, vector<int> &labels);
+	bool checkOperand(string s);
 private:
+	int failed;
 	int program_size;
 	int program_counter; 
 	vector<Instruction*> list_of_instructions;

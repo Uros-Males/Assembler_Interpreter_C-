@@ -5,8 +5,3 @@
 #include<stdlib.h>
 
 using namespace std;
-
-/*void Instruction::executeInstruction() {
-	cout << "zasto";
-	return;
-}*/
