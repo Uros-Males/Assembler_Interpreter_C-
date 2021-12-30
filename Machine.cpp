@@ -13,9 +13,16 @@
 #include "Instruction_ENDLOOP.h"
 #include "Exceptions.h"
 
+#define _CRTDBG_MAP_ALLOC
+#include<iostream>
+#include <crtdbg.h>
+#ifdef _DEBUG
+#define DEBUG_NEW new(_NORMAL_BLOCK, __FILE__, __LINE__)
+#define new DEBUG_NEW
+#endif
+
 #include<vector>
 #include<stack>
-#include<iostream>
 #include<string>
 #include<stdlib.h>
 #include<fstream>
@@ -93,11 +100,24 @@ void Machine::processLine(Instruction* tmp, string tmps, int& i, vector<int>& la
 		Operand* op = new Operand;
 		op->getFromString(tmptmp);
 		tmp->operands_for_line.push_back(op);
+		this->to_delete.push_back(op);
 	}
     list_of_instructions.push_back(tmp);
 	return;
 }
 
+// brisanje sadrzaja list_of_instructions 
+// i operanada u njima 
+ void Machine::clear() {
+	for (int i = 0; i < this->list_of_instructions.size(); i++) {
+		delete this->list_of_instructions[i];
+		for (int j = 0; j < this->list_of_instructions[i]->operands_for_line.size(); j++) {
+			delete this->list_of_instructions[i]->operands_for_line[j]; 
+		}
+	}
+	for (int i = 0; i < this->to_delete.size(); i++) delete this->to_delete[i];
+	for (int i = 0; i < this->operands.size(); i++) delete this->operands[i];
+}
 
 //u ovoj funkciji prolazimo kroz nas file i idemo liniju po liniju
 // ukoliko fajl s imenom filepath ne postoji prijavljujemo gresku
@@ -262,22 +282,30 @@ void Machine::loadProgram(const string& filepath) {
 					if(k) this->program_size++;
 				}
 			}
+			if (!loop.empty() || !ifgr_ifeq.empty() || !_else.empty()) throw new InstructionSyntaxError();
+
 		}
 		my_file.close();
 	}
 	catch (InstructionSyntaxError* e) {
 		this->failed = 1;
 		e->what();
+		this->clear();
+		delete e;
 		return;
 	}
 	catch (OperandSyntaxError* e) {
 		this->failed = 1;
 		e->what();
+		this->clear();
+		delete e;
 		return;
 	}
 	catch (FileError* e) {
 		this->failed = 1;
 		e->what(); 
+		this->clear();
+		delete e;
 		return;
 	}
 }
@@ -290,7 +318,8 @@ void Machine::loadProgram(const string& filepath) {
 void Machine::execute(const string& filepath) {
 	if (this->failed) {
 		ofstream output(filepath); 
-		output << "failed"; 
+		output << "failed";
+		//this->clear();
 		return; 
 	}
 	if (!this->failed) {
@@ -307,9 +336,12 @@ void Machine::execute(const string& filepath) {
 			if (output.is_open()) {
 				for (int i = 0; i < 26; i++) {
 					if (this->findOperand((char)('A' + i)) == NULL) continue;
+					//cout << (char)('A' + i) << "=" << this->findOperand((char)('A' + i))->value << endl;
 					output << (char)('A' + i) << "=" << this->findOperand((char)('A' + i))->value;
 					if (i != last_one) output << endl;
 				}
+				this->clear();
+				output.close();
 			}
 			else {
 				throw new FileError(filepath);
@@ -319,13 +351,17 @@ void Machine::execute(const string& filepath) {
 			this->failed = 1;
 			ofstream output(filepath);
 			output << "failed";
-			e->what(); 
+			e->what();
+			this->clear();
+			delete e;
 			return;
 		}
 		catch (FileError* e) {
 			ofstream output(filepath);
 			this->failed = 1;
 			e->what();
+			this->clear();
+			delete e;
 			return;
 		}
 	}

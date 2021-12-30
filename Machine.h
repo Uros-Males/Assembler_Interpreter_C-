@@ -16,12 +16,14 @@ public:
 	Operand* findOperand(char c); 
 	void processLine(Instruction* tmp, string tmps, int &i, vector<int> &labels);
 	bool checkOperand(string s);
+	void clear();
 private:
 	int failed;
 	int program_size;
 	int program_counter; 
 	vector<Instruction*> list_of_instructions;
 	vector<Operand*> operands; 
+	vector<Operand*> to_delete;
 };
 
 

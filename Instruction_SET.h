@@ -9,6 +9,7 @@ using namespace std;
 
 class Instruction_SET : public Instruction {
 public:
+	~Instruction_SET();
 	virtual void executeInstruction(int *k);
 	friend class Machine;
 	friend class Operand;
